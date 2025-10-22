@@ -39,14 +39,6 @@ const NotesClient = ({ tagName }: { tagName?: string }) => {
     placeholderData: keepPreviousData, //  залишає старі дані поки нові завантажуються
   });
 
-  // if (isLoading) return <p>Loading notes...</p>;
-  // if (isError) return <p>Failed to load notes.</p>;
-
-  // ✅ Безпечна перевірка: навіть якщо notes немає
-  // if (!data?.notes?.length) {
-  //   return <p>No notes found</p>;
-  // }
-
   return (
     <div className={css.app}>
       <div className={css.toolbar}>
