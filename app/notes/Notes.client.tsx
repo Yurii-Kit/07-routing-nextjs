@@ -1,7 +1,9 @@
+// app/notes/Notes.client.tsx
+
 'use client';
 import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchNotes } from '@/lib/api';
 import type { FetchNoteResponse } from '@/types/note';
 import NoteList from '@/components/NoteList/NoteList';
@@ -11,10 +13,11 @@ import NoteForm from '@/components/NoteForm/NoteForm';
 import css from './Notes.client.module.css';
 import SearchBox from '@/components/SearchBox/SearchBox';
 
-const NotesClient = () => {
+const NotesClient = ({ tagName }: { tagName?: string }) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const [query, setQuery] = useState<string>('');
+
   const debouncedSetQuery = useDebouncedCallback((newQuery: string) => {
     setQuery(newQuery);
     setCurrentPage(1);
@@ -23,19 +26,26 @@ const NotesClient = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
   // ✅ React Query підхоплює гідратований кеш
+  const tagKey = tagName ?? 'all';
   const { data, isLoading, isError } = useQuery<FetchNoteResponse>({
-    queryKey: ['notes', query, currentPage],
-    queryFn: () => fetchNotes(query, currentPage),
+    queryKey: ['notes', query, currentPage, tagKey],
+    queryFn: () => fetchNotes(query, currentPage, 12, tagName),
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+
+    placeholderData: keepPreviousData, //  залишає старі дані поки нові завантажуються
   });
 
-  if (isLoading) return <p>Loading notes...</p>;
-  if (isError) return <p>Failed to load notes.</p>;
+  // if (isLoading) return <p>Loading notes...</p>;
+  // if (isError) return <p>Failed to load notes.</p>;
 
   // ✅ Безпечна перевірка: навіть якщо notes немає
-  if (!data?.notes?.length) {
-    return <p>No notes found</p>;
-  }
+  // if (!data?.notes?.length) {
+  //   return <p>No notes found</p>;
+  // }
 
   return (
     <div className={css.app}>
@@ -51,8 +61,14 @@ const NotesClient = () => {
         <button className={css.button} onClick={openModal}>
           Create note +
         </button>
+        {isLoading && <p className={css.loading}>Loading notes...</p>}
+        {isError && <p className={css.error}>Failed to load notes.</p>}
       </div>
-      <NoteList notes={data.notes} />
+      {data?.notes?.length ? (
+        <NoteList notes={data.notes} />
+      ) : (
+        !isLoading && <p>No notes found</p>
+      )}
       {isModalOpen && (
         <Modal onClose={closeModal}>
           <NoteForm onClose={closeModal} />

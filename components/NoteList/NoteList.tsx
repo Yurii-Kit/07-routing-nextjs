@@ -28,7 +28,11 @@ const NoteList = ({ notes }: NoteListProps) => {
             <span className={css.tag}>{note.tag}</span>
 
             {/* ✅ Додаємо посилання на сторінку деталей */}
-            <Link href={`/notes/${note.id}`} className={css.link}>
+            <Link
+              href={`/notes/${note.id}`}
+              scroll={false}
+              className={css.link}
+            >
               View details
             </Link>
 

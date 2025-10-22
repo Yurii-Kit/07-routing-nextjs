@@ -27,9 +27,10 @@ const NoteDetailsClient = () => {
       <div className={css.item}>
         <div className={css.header}>
           <h2>{note.title}</h2>
+          <span className={css.tag}>{note.tag}</span>
         </div>
         <p className={css.content}>{note.content}</p>
-        <p className={css.date}>{note.createdAt}</p>
+        <p className={css.date}>{new Date(note.createdAt).toLocaleString()}</p>
       </div>
     </div>
   );

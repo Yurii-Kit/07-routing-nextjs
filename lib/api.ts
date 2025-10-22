@@ -11,9 +11,19 @@ export const fetchNotes = async (
   keyword?: string,
   page?: number,
   perPage: number = 12,
+  tag?: string, // ← додано
 ): Promise<FetchNoteResponse> => {
+  const params: Record<string, string | number | undefined> = {
+    search: keyword,
+    page,
+    perPage,
+  };
+  // important: бекенд не очікує 'all'
+  if (tag && tag !== 'all') {
+    params.tag = tag;
+  }
   const response: AxiosResponse<FetchNoteResponse> = await axios.get('notes', {
-    params: { search: keyword, page, perPage },
+    params,
   });
   return response.data;
 };
